@@ -1,6 +1,40 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+
 export default function Login() {
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    const navigate = useNavigate();
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError("");
+        try {
+            const response = await fetch("https://reactinterviewtask.codetentaclestechnologies.in/api/api/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await response.json();
+            if (response.ok && data.token) {
+                localStorage.setItem("token", data.token);
+                // Role detection
+                const role = email === "admin@gmail.com" ? "admin" : "user";
+                localStorage.setItem("role", role);
+                if (role === "admin") { // Redirect to admin page
+                    navigate("/List");
+                } else { // Redirect to user page
+                    navigate("/Product");
+                }
+            } else {
+                setError(data.message || "Login failed");
+            }
+        } catch (err) {
+            setError("Network error");
+        }
+    };
+
     return (
         <>
             <section className="border-red-500 login-form min-h-screen flex items-center justify-center bg-img" style={{backgroundImage:"url('/assets/image/bbblurry.svg')"}}>
@@ -12,13 +46,15 @@ export default function Login() {
                                 <img src="https://i.pinimg.com/originals/0a/5f/ea/0a5feae400fc816c4ca2aca8bd67a168.jpg" alt="login-img" className="rounded-full m-auto p-1 border" width="100px" height="100px" />
                                 <h3 className="pt-8 font-bold text-4xl text-center tracking-wider text-white">Login</h3>
                                 </div>
-                                <form className=" pt-8  rounded">
+                                <form className=" pt-8  rounded" onSubmit={handleSubmit}>
                                   <div className="mb-4">
                                       <input
                                             className="w-full px-3 py-3 text-sm leading-normal text-gray-50 border-0 bg-[#ffffff1a]  rounded shadow appearance-none focus:outline-none focus:shadow-outline"
                                             id="email"
                                             type="email"
                                             placeholder="Email"
+                                            value={email}
+                                            onChange={e => setEmail(e.target.value)}
                                         />
                                     </div>
                                     <div className="mb-4 md:mr-2 ">
@@ -27,16 +63,18 @@ export default function Login() {
                                             id="password"
                                             type="password"
                                             placeholder="Password"
+                                            value={password}
+                                            onChange={e => setPassword(e.target.value)}
                                         />
                                     </div>
+                                    {error && <div className="text-red-500 text-center mb-2">{error}</div>}
                                     <div className="mb-6 text-center">
-                                        <Link to="/List"
+                                        <button
                                             className="w-full px-4 py-3 font-bold tracking-wider text-[#000] rounded-lg bg-white focus:outline-none focus:shadow-outline"
-                                            type="button"> Login
+                                            type="submit"> Login
                                             <div className="fill-one"></div>
-                                        </Link>
+                                        </button>
                                     </div>
-                                
                                 </form>
                             </div>
                         </div>
