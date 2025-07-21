@@ -1,19 +1,47 @@
 import React, { useState } from 'react';
-import Personaldetails from "./stepperform/personaldetails";
-import Countrydetails from "./stepperform/countrydetails";
-import Skillsdetails from "./stepperform/skillsdetails";
-import Credentaildetails from "./stepperform/credentaildetails";
+import PersonalDetails from "./stepperform/personaldetails";
+import CountryDetails from "./stepperform/countrydetails";
+import SkillsDetails from "./stepperform/skillsdetails";
+import CredentailDetails from "./stepperform/credentaildetails";
 import { Stepper, Step, StepLabel, Button, Typography } from '@mui/material';
 import Layout from "../component/Layout";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { registerUser } from '../api';
 const steps = ['Personal Information', 'Details', 'Skills Details', "Credentail Details"];
 
 export default function Stepperform() {
     const [activeStep, setActiveStep] = useState(0);
+    const [formData, setFormData] = useState({});
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
+    const navigate = useNavigate();
 
-
-    const handleNext = () => {
-        setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    const handleNext = async () => {
+        if (activeStep === steps.length - 1) {
+            // Submit registration
+            setError("");
+            setSuccess("");
+            try {
+                const submitData = new FormData();
+                // Collect all fields from formData
+                Object.entries(formData).forEach(([key, value]) => {
+                    if (value !== undefined && value !== null) {
+                        submitData.append(key, value);
+                    }
+                });
+                const res = await registerUser(submitData);
+                if (res.success) {
+                    setSuccess("Registration successful!");
+                    setTimeout(() => navigate("/List"), 1000);
+                } else {
+                    setError(res.message || "Registration failed");
+                }
+            } catch (e) {
+                setError("Network error");
+            }
+        } else {
+            setActiveStep((prevActiveStep) => prevActiveStep + 1);
+        }
     };
 
     const handleBack = () => {
@@ -23,27 +51,19 @@ export default function Stepperform() {
         switch (step) {
             case 0:
                 return (
-                    <>
-                        <Personaldetails />
-                    </>
+                    <PersonalDetails formData={formData} setFormData={setFormData} />
                 );
             case 1:
                 return (
-                    <>
-                        <Countrydetails />
-                    </>
+                    <CountryDetails formData={formData} setFormData={setFormData} />
                 );
             case 2:
                 return (
-                    <>
-                        <Skillsdetails />
-                    </>
+                    <SkillsDetails formData={formData} setFormData={setFormData} />
                 );
             case 3:
                 return (
-                    <>
-                        <Credentaildetails />
-                    </>
+                    <CredentailDetails formData={formData} setFormData={setFormData} />
                 );
             default:
                 return 'Unknown step';
@@ -54,7 +74,7 @@ export default function Stepperform() {
         <Layout>
             <div className="bg-white p-4 mb-2 rounded-lg  dark:border-gray-700 mt-14">
                 <div>
-                    <h3 class="!text-defaulttextcolor dark:!text-defaulttextcolor/70 dark:text-white text-left dark:hover:text-white text-[1.125rem] font-semibold">Stepper Form</h3>
+                    <h3 className="!text-defaulttextcolor dark:!text-defaulttextcolor/70 dark:text-white text-left dark:hover:text-white text-[1.125rem] font-semibold">Stepper Form</h3>
                 </div>
             </div>
             <div className="bg-white">
@@ -82,6 +102,8 @@ export default function Stepperform() {
                         ) : (
                             <>
                                 <Typography variant="h5">{getStepContent(activeStep)}</Typography>
+                                {error && <div className="text-red-500 text-center mb-2">{error}</div>}
+                                {success && <div className="text-green-600 text-center mb-2">{success}</div>}
                                 <div className='flex justify-center'>
                                     <div className='flex justify-between w-full mt-4'>
                                         <Button className="bg-back " disabled={activeStep === 0} onClick={handleBack}>

@@ -222,7 +222,7 @@ const Table = ({
         </tbody>
       </table>
 
-      <Stack spacing={2} direction="row" className="mt-3 flex justify-between">
+      {/* <Stack spacing={2} direction="row" className="mt-3 flex justify-between">
         <select
           className=" p-2 bg-primaryDarkCards rounded-lg border border-primaryGray-700 overflow-x-auto text-sm"
           value={rowsPerPage}
@@ -241,7 +241,7 @@ const Table = ({
           variant="outlined"
           shape="rounded"
         />
-      </Stack>
+      </Stack> */}
     </div>
   );
 };
